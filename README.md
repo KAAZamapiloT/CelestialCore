@@ -1,168 +1,153 @@
-# NexusEngine - Game Engine with SDL3 and GLM
+# CelestialCore Game Engine
 
-NexusEngine is a lightweight C++ game engine built with SDL3 and GLM math library, designed for 2D and 3D game development. This project aims to provide a simple but powerful foundation for creating cross-platform games.
-
-## Features
-
-- SDL3-based rendering system
-- GLM-powered math and transformation system
-- 2D and 3D object support
-- Component-based architecture
-- Modern C++17 implementation
-- Asset Manager for handling textures, sound effects, and music
-- Game Object system with Sprite composition
-- Input handling system
-
-## GameObject System
-
-The engine uses a GameObject-based architecture. GameObjects are the main entities in your game and can have various components:
-
-### GameObject
-
-The GameObject class is the base class for all game entities. It has the following features:
-
-- Position and size management
-- Input handling
-- Update and render functionality
-- Sprite composition for visual representation
-
-### Sprite Component
-
-GameObjects use Sprite composition for visual representation:
-
-- Each GameObject contains a Sprite object
-- Sprites are connected to textures via the AssetManager
-- Sprites can be animated, scaled, rotated, and colored
-- Multiple rendering methods for flexibility
-
-## Asset Manager
-
-The Asset Manager is responsible for loading and managing game assets:
-
-- Textures (using SDL3)
-- Sound effects (using SDL3)
-- Music (using SDL3)
-
-## Dependencies
-
-- [SDL3](https://github.com/libsdl-org/SDL) - Simple DirectMedia Layer 3
-- [GLM](https://github.com/g-truc/glm) - OpenGL Mathematics
-- C++17 compatible compiler
-- CMake 3.15 or higher
-
-## Build Instructions
-
-### Linux/macOS
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/NexusEngine.git
-cd NexusEngine
-
-# Create a build directory
-mkdir build && cd build
-
-# Generate build files
-cmake ..
-
-# Build the project
-make
-
-# Run the application
-./bin/GameEngine
-```
-
-### Windows
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/NexusEngine.git
-cd NexusEngine
-
-# Create a build directory
-mkdir build
-cd build
-
-# Generate build files
-cmake ..
-
-# Build the project (using Visual Studio or MinGW)
-cmake --build .
-
-# Run the application
-.\bin\Debug\GameEngine.exe
-```
+CelestialCore is a 2D game engine built with SDL2 and GLM, designed to provide a flexible and easy-to-use framework for game development.
 
 ## Project Structure
 
-- `/modules` - Core engine modules
-  - `Transformation` - Handles 2D/3D transformations
-  - `Visual` - Manages sprites, meshes, and voxels
-  - `Collision` - Collision detection system
-  - `Scripts` - Scripting system
+The project is organized as follows:
 
-- `/subsystems` - Engine subsystems
-  - `Render` - Rendering subsystem
-  - `Audio` - Audio subsystem
+- **Core Engine (Shared Library)**
+  - `Objects/` - Game object classes and components
+  - `subsystems/` - Core engine subsystems (rendering, audio, etc.)
+  - `modules/` - Functional modules (collision, transformations, etc.)
+  - `assets/` - Asset directory for sprites, sounds, music
 
-- `/Objects` - Game object definitions
+- **Editor**
+  - `ui/editor/` - Separate editor application using Dear ImGui
 
-## Usage Example
+## Requirements
+
+- CMake 3.15+
+- C++17 compatible compiler
+- SDL2
+- SDL2_image
+- SDL2_mixer
+- GLM
+- Git (for downloading ImGui)
+
+## Building the Project
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/CelestialCore.git
+cd CelestialCore
+```
+
+### 2. Setup ImGui for the editor
+
+```bash
+# Linux/macOS
+./setup_imgui.sh
+
+# Windows
+setup_imgui.bat
+```
+
+### 3. Build with CMake
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+This will build:
+- `libCelestialCore.so` (or .dll on Windows) - The engine shared library
+- `CelestialRuntime` - The engine runtime executable
+- `CelestialEditor` - The editor application
+
+## Running the Editor
+
+```bash
+# Linux/macOS
+./run_editor.sh
+
+# Windows
+run_editor.bat
+```
+
+## Using the Engine in Your Game
+
+### CMake Integration
+
+To use CelestialCore in your own game project, add the following to your CMakeLists.txt:
+
+```cmake
+# Find CelestialCore package
+find_package(CelestialCore REQUIRED)
+
+# Create your game executable
+add_executable(YourGame main.cpp)
+
+# Link with CelestialCore
+target_link_libraries(YourGame PRIVATE CelestialCore)
+```
+
+### Code Example
 
 ```cpp
-#include <SDL3/SDL.h>
-#include <glm/glm.hpp>
-#include "subsystems/Render.h"
-#include "modules/Transformation.h"
-#include "modules/Visual.h"
+#include <CelestialCore/Objects/GameObject.h>
+#include <CelestialCore/subsystems/AssetManager.h>
 
-int main() {
-    // Initialize the renderer
-    Renderer renderer;
-    renderer.initialize("My Game", 800, 600);
+int main(int argc, char* argv[]) {
+    // Initialize SDL and create window/renderer
+    SDL_Window* window = SDL_CreateWindow("My Game", SDL_WINDOWPOS_UNDEFINED, 
+                                         SDL_WINDOWPOS_UNDEFINED, 800, 600, 
+                                         SDL_WINDOW_SHOWN);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 
+                                               SDL_RENDERER_ACCELERATED);
     
-    // Create a sprite
-    Sprite sprite("assets/player.png");
+    // Initialize asset manager
+    AssetManager::getInstance().initialize(renderer);
     
-    // Create a transform
-    Transform2D transform;
-    transform.location = glm::vec2(400, 300);
-    transform.scale = glm::vec2(1.0f, 1.0f);
+    // Create game objects
+    GameObject player(1);
+    player.setSprite("player", "assets/sprites/player.png");
+    player.setPosition(400, 300);
     
     // Game loop
-    bool quit = false;
-    SDL_Event e;
+    bool running = true;
+    Uint32 lastTime = SDL_GetTicks();
     
-    while (!quit) {
+    while (running) {
+        // Calculate delta time
+        Uint32 currentTime = SDL_GetTicks();
+        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        lastTime = currentTime;
+        
         // Handle events
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_EVENT_QUIT) {
-                quit = true;
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
             }
+            player.handleInput(event);
         }
         
-        // Update logic
-        transform.rotation += 0.01f;
+        // Update game objects
+        player.update(deltaTime);
         
         // Render
-        renderer.beginFrame();
-        renderer.renderSprite(sprite, transform);
-        renderer.endFrame();
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        
+        player.render(renderer);
+        
+        SDL_RenderPresent(renderer);
     }
     
-    renderer.shutdown();
+    // Cleanup
+    AssetManager::getInstance().clearAll();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    
     return 0;
 }
 ```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request 
+This project is licensed under the MIT License - see the LICENSE file for details. 

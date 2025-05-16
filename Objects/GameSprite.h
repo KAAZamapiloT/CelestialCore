@@ -1,9 +1,10 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <string>
+#include "../CelestialCore_Export.h"
 #include "../subsystems/AssetManager.h"
 
-class GameSprite {
+class CELESTIAL_API GameSprite {
 public:
     GameSprite();
     GameSprite(const std::string& textureId, const std::string& filePath);

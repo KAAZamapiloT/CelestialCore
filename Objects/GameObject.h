@@ -3,12 +3,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
+#include "../CelestialCore_Export.h"
 #include "../subsystems/HandleInput.h"
 #include "../subsystems/Render.h"
 #include "../subsystems/Audio.h"
 #include "GameSprite.h"
 #include"stdio.h"
-class GameObject {
+
+class CELESTIAL_API GameObject {
 public:
     GameObject(int ID);
     GameObject();
