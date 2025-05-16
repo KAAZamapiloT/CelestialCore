@@ -2,7 +2,7 @@
 //mesh optimizer
 // sprite handeler
 
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
