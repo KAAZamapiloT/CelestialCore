@@ -1,4 +1,4 @@
-
+#include <SDL2/SDL.h>
 
 class InputComponent{
     public:

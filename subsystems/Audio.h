@@ -1,3 +1,6 @@
+#pragma once
+#include <string>
+#include <glm/glm.hpp>
 class Audio{
     public:
     Audio();
